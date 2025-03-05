@@ -1,4 +1,4 @@
-#!/root/ttGen/ttGenEnv/bin/python3.10
+#!/home/stat/ttGen/ttGenEnv/bin/python3.10
 # -*- coding: utf-8 -*-
 import re
 import sys

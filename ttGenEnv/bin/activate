@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV=/root/ttGen/ttGenEnv
+VIRTUAL_ENV=/home/stat/ttGen/ttGenEnv
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

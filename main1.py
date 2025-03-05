@@ -12,6 +12,7 @@ from moviepy.video.fx.MultiplyColor import MultiplyColor
 from moviepy.video.fx.LumContrast import LumContrast
 from moviepy.audio.fx.AudioFadeIn import AudioFadeIn
 from moviepy.audio.fx.MultiplyVolume import MultiplyVolume
+from moviepy.video.fx.Resize import Resize  # Импортируем Resize
 
 # Конфигурация папок
 folder_main = "./main"
@@ -23,7 +24,7 @@ os.makedirs(output_folder, exist_ok=True)
 try:
     main_video = VideoFileClip(os.path.join(folder_main, "main.mp4"))
 except Exception as e:
-    print(f"z: {e}")
+    print(f"Ошибка загрузки видео: {e}")
     exit(1)
 
 # Проверка фоновых видео
@@ -86,10 +87,23 @@ for i in range(VIDEO_COUNT):
         if bg_clip.duration < processed.duration:
             bg_clip = bg_clip.loop(duration=processed.duration)
 
-        # Собираем финальный клип с аудио
+        # Масштабирование главного видео до 85-95% экрана
+        bg_width, bg_height = bg_clip.size
+        scale_factor = random.uniform(0.85, 0.95)  # Случайный масштаб от 85% до 95%
+        new_width = int(bg_width * scale_factor)
+        new_height = int(bg_height * scale_factor)
+
+        # Применяем Resize
+        processed = Resize((new_width, new_height)).apply(processed)
+
+        # Центрируем главное видео
+        x_center = (bg_width - new_width) // 2
+        y_center = (bg_height - new_height) // 2
+
+        # Собираем финальный клип
         final = CompositeVideoClip([
             bg_clip, 
-            processed.with_position("center")
+            processed.with_position((x_center, y_center))  # Центрируем видео
         ])
 
         # Экспорт
