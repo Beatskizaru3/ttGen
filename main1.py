@@ -23,7 +23,7 @@ os.makedirs(output_folder, exist_ok=True)
 try:
     main_video = VideoFileClip(os.path.join(folder_main, "main.mp4"))
 except Exception as e:
-    print(f"Ошибка загрузки видео: {e}")
+    print(f"z: {e}")
     exit(1)
 
 # Проверка фоновых видео
