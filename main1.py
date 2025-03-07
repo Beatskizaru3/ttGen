@@ -12,7 +12,7 @@ from moviepy.video.fx.MultiplyColor import MultiplyColor
 from moviepy.video.fx.LumContrast import LumContrast
 from moviepy.audio.fx.AudioFadeIn import AudioFadeIn
 from moviepy.audio.fx.MultiplyVolume import MultiplyVolume
-from moviepy.video.fx.Resize import Resize  # Импортируем Resize
+from moviepy.video.fx.Resize import Resize
 
 # Конфигурация папок
 folder_main = "./main"
@@ -37,12 +37,14 @@ if not bg_videos:
 # Параметры обработки
 VIDEO_COUNT = 5
 FADE_DURATION = 0.01
+IPHONE_8_RESOLUTION = (750, 1334)  # Разрешение iPhone 8
+TARGET_WIDTH_PERCENTAGE = 0.95  # Ширина основного видео — строго 95%
 
 for i in range(VIDEO_COUNT):
     try:
         # Генерация случайных параметров
         speed = random.uniform(1.15, 1.25)
-        rotation = random.uniform(-3, 3)
+        rotation = random.uniform(-1, 1)
         brightness = random.uniform(0.95, 1.05)
         contrast = random.uniform(0.95, 1.05)
         saturation = random.uniform(0.95, 1.05)
@@ -87,27 +89,33 @@ for i in range(VIDEO_COUNT):
         if bg_clip.duration < processed.duration:
             bg_clip = bg_clip.loop(duration=processed.duration)
 
-        # Масштабирование главного видео до 85-95% экрана
-        bg_width, bg_height = bg_clip.size
-        scale_factor = random.uniform(0.85, 0.95)  # Случайный масштаб от 85% до 95%
-        new_width = int(bg_width * scale_factor)
-        new_height = int(bg_height * scale_factor)
+        # Масштабирование основного видео с сохранением пропорций и строгой шириной 95%
+        main_width, main_height = processed.size
+        target_width, target_height = IPHONE_8_RESOLUTION
+        new_width = int(target_width * TARGET_WIDTH_PERCENTAGE)  # 95% от ширины iPhone 8 (712 пикселей)
+        aspect_ratio_main = main_width / main_height
 
-        # Применяем Resize
-        processed = Resize((new_width, new_height)).apply(processed)
+        # Вычисляем высоту с сохранением пропорций
+        new_height = int(new_width / aspect_ratio_main)
+
+        # Применяем Resize с сохранением пропорций
+        processed = Resize(width=new_width, height=new_height).apply(processed)
+
+        # Масштабируем фоновое видео под разрешение iPhone 8
+        bg_clip = Resize(width=target_width, height=target_height).apply(bg_clip)
 
         # Центрируем главное видео
-        x_center = (bg_width - new_width) // 2
-        y_center = (bg_height - new_height) // 2
+        x_center = (target_width - new_width) // 2
+        y_center = (target_height - new_height) // 2
 
         # Собираем финальный клип
         final = CompositeVideoClip([
             bg_clip, 
             processed.with_position((x_center, y_center))  # Центрируем видео
-        ])
+        ], size=IPHONE_8_RESOLUTION)
 
         # Экспорт
-        output_path = os.path.join(output_folder, f"video_{i+1}.mp4")
+        output_path = os.path.join(output_folder, f"{i+1}.mp4")
         final.write_videofile(
             output_path,
             codec="libx264",
